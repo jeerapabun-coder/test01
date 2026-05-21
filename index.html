@@ -1,49 +1,115 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard + NotebookLM</title>
-
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claim Management System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+            </div>
+            <span class="brand-text" data-lang="brand">Claim System</span>
+        </div>
 
-  <header class="header">
-    <h1>My Analytics Dashboard</h1>
-    <p>Looker Studio + NotebookLM</p>
-  </header>
+        <div class="sidebar-menu">
+            <a href="index.html" class="menu-item active">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <span data-lang="menuDashboard">แดชบอร์ด</span>
+            </a>
+            <a href="settings.html" class="menu-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <span data-lang="menuSettings">ตั้งค่า</span>
+            </a>
+        </div>
 
-  <!-- LOOKER STUDIO -->
-  <section class="section">
-    <h2>📊 Looker Studio</h2>
+        <div class="sidebar-footer">
+            <div class="connection-status" id="connectionStatus">
+                <span class="status-dot offline"></span>
+                <span class="status-text" data-lang="statusNotConfigured">ยังไม่ได้ตั้งค่า</span>
+            </div>
+        </div>
+    </nav>
 
-    <div class="iframe-container top-frame">
-      <iframe
-        src="https://datastudio.google.com/reporting/301fb879-7465-47b1-b437-6cf68598a38d"
-        frameborder="0"
-        allowfullscreen
-        sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-forms">
-      </iframe>
-    </div>
-  </section>
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <button class="menu-toggle" id="menuToggle">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+            <h1 class="page-title" data-lang="pageDashboard">แดชบอร์ด</h1>
+            <div class="topbar-actions">
+                <div id="langToggleContainer"></div>
+                <button class="btn-icon" id="refreshBtn" title="Refresh">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                </button>
+            </div>
+        </header>
 
-  <!-- NOTEBOOKLM -->
-  <section class="section">
-    <h2>📘 NotebookLM</h2>
+        <!-- Dashboard Section -->
+        <section class="dashboard-section">
+            <div class="section-header">
+                <h2 data-lang="lookerTitle">รายงาน Looker Studio</h2>
+                <div class="embed-controls">
+                    <button class="btn-sm" id="expandDashboard" title="Expand">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="dashboard-embed" id="dashboardEmbed">
+                <div class="embed-placeholder" id="embedPlaceholder">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                    <p data-lang="lookerPlaceholder">ยังไม่ได้ตั้งค่า Looker Studio URL</p>
+                    <a href="settings.html" class="btn-primary" data-lang="goToSettings">ไปตั้งค่า</a>
+                </div>
+                <iframe id="lookerFrame" class="looker-iframe" style="display:none;" frameborder="0" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>
+            </div>
+        </section>
 
-    <div class="iframe-container bottom-frame">
-      <iframe
-        src="https://notebooklm.google.com/notebook/8447e538-0470-4b2b-ac1e-28f511fb7ab9"
-        frameborder="0"
-        allowfullscreen>
-      </iframe>
-    </div>
-  </section>
+        <!-- Chat Section -->
+        <section class="chat-section">
+            <div class="section-header">
+                <h2>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;vertical-align:middle;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    <span data-lang="chatTitle">ถาม-ตอบข้อมูล (Gemini AI)</span>
+                </h2>
+            </div>
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message bot">
+                        <div class="message-avatar">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                        </div>
+                        <div class="message-content">
+                            <p data-lang="chatWelcome" data-lang-html="true">สวัสดีครับ! ผมพร้อมตอบคำถามจากข้อมูล Google Sheet ของคุณ กรุณาตั้งค่า API Key และ Sheet ID ในหน้า<a href="settings.html">ตั้งค่า</a>ก่อนเริ่มใช้งาน</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <div class="chat-input-wrapper">
+                        <textarea id="chatInput" data-lang="chatPlaceholder" placeholder="พิมพ์คำถามเกี่ยวกับข้อมูลของคุณ..." rows="1"></textarea>
+                        <button class="send-btn" id="sendBtn" disabled>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                        </button>
+                    </div>
+                    <p class="chat-hint" data-lang="chatHint">กด Enter เพื่อส่ง • Shift+Enter ขึ้นบรรทัดใหม่</p>
+                </div>
+            </div>
+        </section>
+    </main>
 
-  <footer class="footer">
-    <p>Created with GitHub Pages</p>
-  </footer>
-
+    <script src="lang.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
