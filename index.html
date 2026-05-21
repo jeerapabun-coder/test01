@@ -1,115 +1,488 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Claim Management System</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard & AI Assistant</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Sarabun", Roboto, sans-serif;
+    background: #f4f6fa;
+    color: #1f2937;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  header {
+    background: linear-gradient(90deg, #1e3a8a, #2563eb);
+    color: #fff;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+  header h1 { font-size: 18px; font-weight: 600; }
+  .header-controls { display: flex; align-items: center; gap: 6px; }
+  .lang-switch button,
+  .settings-link {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.2s;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .lang-switch button.active,
+  .lang-switch button:hover,
+  .settings-link:hover {
+    background: rgba(255,255,255,0.35);
+  }
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+  }
+  .panel {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .panel-header {
+    padding: 10px 16px;
+    border-bottom: 1px solid #e5e7eb;
+    font-weight: 600;
+    font-size: 14px;
+    color: #374151;
+    background: #f9fafb;
+  }
+  .dashboard-panel { flex: 0 0 auto; }
+  .dashboard-frame {
+    width: 100%;
+    height: 60vh;
+    min-height: 420px;
+    border: none;
+  }
+  .chat-panel {
+    flex: 1 1 auto;
+    min-height: 400px;
+  }
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 50vh;
+  }
+  .msg {
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    line-height: 1.5;
+    font-size: 14px;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+  }
+  .msg.user {
+    align-self: flex-end;
+    background: #2563eb;
+    color: #fff;
+    border-bottom-right-radius: 2px;
+  }
+  .msg.bot {
+    align-self: flex-start;
+    background: #f3f4f6;
+    color: #1f2937;
+    border-bottom-left-radius: 2px;
+  }
+  .msg.system {
+    align-self: center;
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 12px;
+    font-style: italic;
+  }
+  .typing {
+    align-self: flex-start;
+    color: #6b7280;
+    font-size: 13px;
+    padding: 4px 14px;
+  }
+  .chat-input {
+    display: flex;
+    border-top: 1px solid #e5e7eb;
+    padding: 10px;
+    gap: 8px;
+    background: #fff;
+  }
+  .chat-input textarea {
+    flex: 1;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 10px;
+    resize: none;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    min-height: 42px;
+    max-height: 120px;
+  }
+  .chat-input textarea:focus { border-color: #2563eb; }
+  .chat-input button {
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0 18px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+  .chat-input button:hover:not(:disabled) { background: #1d4ed8; }
+  .chat-input button:disabled { background: #9ca3af; cursor: not-allowed; }
+  .status {
+    font-size: 12px;
+    color: #6b7280;
+    padding: 6px 16px;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+  }
+  footer {
+    text-align: center;
+    font-size: 12px;
+    color: #6b7280;
+    padding: 12px;
+  }
+  @media (max-width: 640px) {
+    .dashboard-frame { height: 45vh; min-height: 300px; }
+    header h1 { font-size: 15px; }
+    .msg { max-width: 90%; }
+  }
+</style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <nav class="sidebar" id="sidebar">
-        <div class="sidebar-brand">
-            <div class="brand-icon">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                </svg>
-            </div>
-            <span class="brand-text" data-lang="brand">Claim System</span>
-        </div>
+<header>
+  <h1 data-i18n="title">Dashboard & AI Assistant</h1>
+  <div class="header-controls">
+    <div class="lang-switch">
+      <button id="lang-th" class="active" onclick="setLanguage('th')">ไทย</button>
+      <button id="lang-en" onclick="setLanguage('en')">English</button>
+    </div>
+    <a class="settings-link" href="settings.html" data-i18n-title="settingsLink" title="ตั้งค่า">⚙️</a>
+  </div>
+</header>
 
-        <div class="sidebar-menu">
-            <a href="index.html" class="menu-item active">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                <span data-lang="menuDashboard">แดชบอร์ด</span>
-            </a>
-            <a href="settings.html" class="menu-item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                <span data-lang="menuSettings">ตั้งค่า</span>
-            </a>
-        </div>
+<main>
+  <section class="panel dashboard-panel">
+    <div class="panel-header" data-i18n="dashboardTitle">แดชบอร์ด</div>
+    <iframe
+      id="looker-frame"
+      class="dashboard-frame"
+      src="https://lookerstudio.google.com/embed/reporting/YOUR_LOOKER_REPORT_ID/page/YOUR_PAGE_ID"
+      frameborder="0"
+      allowfullscreen
+      sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
+    </iframe>
+  </section>
 
-        <div class="sidebar-footer">
-            <div class="connection-status" id="connectionStatus">
-                <span class="status-dot offline"></span>
-                <span class="status-text" data-lang="statusNotConfigured">ยังไม่ได้ตั้งค่า</span>
-            </div>
-        </div>
-    </nav>
+  <section class="panel chat-panel">
+    <div class="panel-header" data-i18n="chatTitle">ผู้ช่วย AI</div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="status" id="status" data-i18n="loadingData">กำลังโหลดข้อมูล...</div>
+    <div class="chat-input">
+      <textarea
+        id="chat-input"
+        rows="1"
+        data-i18n-placeholder="inputPlaceholder"
+        placeholder="พิมพ์คำถามของคุณ..."
+        onkeydown="handleKey(event)"></textarea>
+      <button id="send-btn" onclick="sendMessage()" data-i18n="sendBtn">ส่ง</button>
+    </div>
+  </section>
+</main>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <header class="topbar">
-            <button class="menu-toggle" id="menuToggle">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-            </button>
-            <h1 class="page-title" data-lang="pageDashboard">แดชบอร์ด</h1>
-            <div class="topbar-actions">
-                <div id="langToggleContainer"></div>
-                <button class="btn-icon" id="refreshBtn" title="Refresh">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-                </button>
-            </div>
-        </header>
+<footer data-i18n="footer">
+  Powered by Gemini · ข้อมูลจาก Google Sheets
+</footer>
 
-        <!-- Dashboard Section -->
-        <section class="dashboard-section">
-            <div class="section-header">
-                <h2 data-lang="lookerTitle">รายงาน Looker Studio</h2>
-                <div class="embed-controls">
-                    <button class="btn-sm" id="expandDashboard" title="Expand">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
-                    </button>
-                </div>
-            </div>
-            <div class="dashboard-embed" id="dashboardEmbed">
-                <div class="embed-placeholder" id="embedPlaceholder">
-                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
-                    <p data-lang="lookerPlaceholder">ยังไม่ได้ตั้งค่า Looker Studio URL</p>
-                    <a href="settings.html" class="btn-primary" data-lang="goToSettings">ไปตั้งค่า</a>
-                </div>
-                <iframe id="lookerFrame" class="looker-iframe" style="display:none;" frameborder="0" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>
-            </div>
-        </section>
+<script>
+  // ============================================================
+  // CONFIG - ค่าเริ่มต้น; user override ได้ผ่าน settings.html (เก็บใน localStorage)
+  // ============================================================
+  const DEFAULT_CONFIG = {
+    GEMINI_API_KEY: "AIzaSyBhch_AKJ-WENNRNAD979ef27jmDFbVqpU",
+    GEMINI_MODEL: "gemini-2.5-flash",
+    SHEET_CSV_URL: "https://docs.google.com/spreadsheets/d/e/YOUR_PUBLISHED_SHEET_ID/pub?gid=0&single=true&output=csv",
+    LOOKER_URL: "https://lookerstudio.google.com/embed/reporting/YOUR_LOOKER_REPORT_ID/page/YOUR_PAGE_ID",
+    MAX_KNOWLEDGE_CHARS: 12000,
+  };
+  const STORAGE_KEY = "dashboard_ai_settings_v1";
 
-        <!-- Chat Section -->
-        <section class="chat-section">
-            <div class="section-header">
-                <h2>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;vertical-align:middle;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                    <span data-lang="chatTitle">ถาม-ตอบข้อมูล (Gemini AI)</span>
-                </h2>
-            </div>
-            <div class="chat-container">
-                <div class="chat-messages" id="chatMessages">
-                    <div class="message bot">
-                        <div class="message-avatar">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                        </div>
-                        <div class="message-content">
-                            <p data-lang="chatWelcome" data-lang-html="true">สวัสดีครับ! ผมพร้อมตอบคำถามจากข้อมูล Google Sheet ของคุณ กรุณาตั้งค่า API Key และ Sheet ID ในหน้า<a href="settings.html">ตั้งค่า</a>ก่อนเริ่มใช้งาน</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="chat-input-area">
-                    <div class="chat-input-wrapper">
-                        <textarea id="chatInput" data-lang="chatPlaceholder" placeholder="พิมพ์คำถามเกี่ยวกับข้อมูลของคุณ..." rows="1"></textarea>
-                        <button class="send-btn" id="sendBtn" disabled>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                        </button>
-                    </div>
-                    <p class="chat-hint" data-lang="chatHint">กด Enter เพื่อส่ง • Shift+Enter ขึ้นบรรทัดใหม่</p>
-                </div>
-            </div>
-        </section>
-    </main>
+  function loadConfig() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      return { ...DEFAULT_CONFIG, ...saved };
+    } catch { return { ...DEFAULT_CONFIG }; }
+  }
+  const CONFIG = loadConfig();
 
-    <script src="lang.js"></script>
-    <script src="app.js"></script>
+  // ============================================================
+  // i18n
+  // ============================================================
+  const I18N = {
+    th: {
+      title: "แดชบอร์ด & ผู้ช่วย AI",
+      dashboardTitle: "แดชบอร์ด",
+      chatTitle: "ผู้ช่วย AI",
+      inputPlaceholder: "พิมพ์คำถามของคุณ...",
+      sendBtn: "ส่ง",
+      footer: "ขับเคลื่อนโดย Gemini · ข้อมูลจาก Google Sheets",
+      welcome: "สวัสดีครับ! ผมเป็นผู้ช่วย AI ที่ตอบจากข้อมูลใน Google Sheet คุณถามอะไรได้เลย",
+      loadingData: "กำลังโหลดข้อมูล...",
+      dataReady: "พร้อมตอบคำถามแล้ว",
+      dataError: "ไม่สามารถโหลดข้อมูลจาก Google Sheet ได้ ตรวจสอบ SHEET_CSV_URL",
+      thinking: "กำลังคิด...",
+      errorPrefix: "เกิดข้อผิดพลาด: ",
+      systemPromptLang: "ภาษาไทย",
+      settingsLink: "ตั้งค่า",
+    },
+    en: {
+      title: "Dashboard & AI Assistant",
+      dashboardTitle: "Dashboard",
+      chatTitle: "AI Assistant",
+      inputPlaceholder: "Type your question...",
+      sendBtn: "Send",
+      footer: "Powered by Gemini · Data from Google Sheets",
+      welcome: "Hi! I'm an AI assistant that answers based on the Google Sheet data. Ask me anything.",
+      loadingData: "Loading data...",
+      dataReady: "Ready to answer questions",
+      dataError: "Failed to load Google Sheet data. Check SHEET_CSV_URL.",
+      thinking: "Thinking...",
+      errorPrefix: "Error: ",
+      systemPromptLang: "English",
+      settingsLink: "Settings",
+    },
+  };
+
+  let currentLang = "th";
+  let knowledgeBase = "";  // ข้อมูลที่ดึงมาจาก Google Sheet
+  let chatHistory = [];    // history สำหรับ context multi-turn
+
+  // ============================================================
+  // Language switching
+  // ============================================================
+  function setLanguage(lang) {
+    currentLang = lang;
+    document.documentElement.lang = lang;
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+      const key = el.getAttribute("data-i18n");
+      if (I18N[lang][key]) el.textContent = I18N[lang][key];
+    });
+    document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+      const key = el.getAttribute("data-i18n-placeholder");
+      if (I18N[lang][key]) el.placeholder = I18N[lang][key];
+    });
+    document.querySelectorAll("[data-i18n-title]").forEach(el => {
+      const key = el.getAttribute("data-i18n-title");
+      if (I18N[lang][key]) el.title = I18N[lang][key];
+    });
+    document.getElementById("lang-th").classList.toggle("active", lang === "th");
+    document.getElementById("lang-en").classList.toggle("active", lang === "en");
+  }
+
+  function t(key) { return I18N[currentLang][key] || key; }
+
+  // ============================================================
+  // Chat UI
+  // ============================================================
+  function addMessage(role, text) {
+    const container = document.getElementById("chat-messages");
+    const div = document.createElement("div");
+    div.className = "msg " + role;
+    div.textContent = text;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+    return div;
+  }
+
+  function addTyping() {
+    const container = document.getElementById("chat-messages");
+    const div = document.createElement("div");
+    div.className = "typing";
+    div.id = "typing-indicator";
+    div.textContent = t("thinking");
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function removeTyping() {
+    const el = document.getElementById("typing-indicator");
+    if (el) el.remove();
+  }
+
+  function setStatus(text, isError = false) {
+    const el = document.getElementById("status");
+    el.textContent = text;
+    el.style.color = isError ? "#dc2626" : "#6b7280";
+  }
+
+  function handleKey(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  }
+
+  // ============================================================
+  // Load knowledge from Google Sheet (CSV)
+  // ============================================================
+  async function loadKnowledge() {
+    try {
+      const res = await fetch(CONFIG.SHEET_CSV_URL);
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const csv = await res.text();
+      knowledgeBase = csvToReadable(csv);
+      setStatus(t("dataReady"));
+    } catch (err) {
+      console.error("Sheet load failed:", err);
+      setStatus(t("dataError"), true);
+      knowledgeBase = "";
+    }
+  }
+
+  // แปลง CSV เป็นข้อความที่อ่านง่าย (header: value, header: value ...)
+  function csvToReadable(csv) {
+    const rows = parseCSV(csv);
+    if (rows.length === 0) return "";
+    const headers = rows[0];
+    const lines = [];
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      const parts = headers.map((h, idx) => `${h}: ${row[idx] ?? ""}`);
+      lines.push(parts.join(" | "));
+    }
+    return lines.join("\n");
+  }
+
+  // CSV parser ที่รองรับ quoted fields และ comma ในค่า
+  function parseCSV(text) {
+    const rows = [];
+    let row = [];
+    let field = "";
+    let inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (inQuotes) {
+        if (c === '"') {
+          if (text[i + 1] === '"') { field += '"'; i++; }
+          else inQuotes = false;
+        } else field += c;
+      } else {
+        if (c === '"') inQuotes = true;
+        else if (c === ",") { row.push(field); field = ""; }
+        else if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
+        else if (c === "\r") { /* skip */ }
+        else field += c;
+      }
+    }
+    if (field.length > 0 || row.length > 0) { row.push(field); rows.push(row); }
+    return rows.filter(r => r.some(v => v && v.trim() !== ""));
+  }
+
+  // ============================================================
+  // Send message to Gemini
+  // ============================================================
+  async function sendMessage() {
+    const input = document.getElementById("chat-input");
+    const text = input.value.trim();
+    if (!text) return;
+
+    input.value = "";
+    document.getElementById("send-btn").disabled = true;
+    addMessage("user", text);
+    addTyping();
+
+    try {
+      const reply = await callGemini(text);
+      removeTyping();
+      addMessage("bot", reply);
+      chatHistory.push({ role: "user", text });
+      chatHistory.push({ role: "model", text: reply });
+      // จำกัด history ไม่ให้ยาวเกินไป
+      if (chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
+    } catch (err) {
+      removeTyping();
+      addMessage("bot", t("errorPrefix") + err.message);
+      console.error(err);
+    } finally {
+      document.getElementById("send-btn").disabled = false;
+      input.focus();
+    }
+  }
+
+  async function callGemini(userMessage) {
+    const knowledge = (knowledgeBase || "").slice(0, CONFIG.MAX_KNOWLEDGE_CHARS);
+    const systemInstruction = `You are a helpful assistant. Answer the user's question using ONLY the knowledge base below when relevant. If the answer is not in the data, say so politely. Respond in ${t("systemPromptLang")}.
+
+=== KNOWLEDGE BASE (from Google Sheet) ===
+${knowledge || "(no data loaded)"}
+=== END KNOWLEDGE BASE ===`;
+
+    const contents = [];
+    for (const m of chatHistory) {
+      contents.push({ role: m.role, parts: [{ text: m.text }] });
+    }
+    contents.push({ role: "user", parts: [{ text: userMessage }] });
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${CONFIG.GEMINI_MODEL}:generateContent?key=${CONFIG.GEMINI_API_KEY}`;
+    const body = {
+      systemInstruction: { parts: [{ text: systemInstruction }] },
+      contents,
+      generationConfig: { temperature: 0.4, maxOutputTokens: 1024 },
+    };
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Gemini API ${res.status}: ${errText.slice(0, 200)}`);
+    }
+    const data = await res.json();
+    const reply = data?.candidates?.[0]?.content?.parts?.map(p => p.text).join("") || "";
+    return reply || "(empty response)";
+  }
+
+  // ============================================================
+  // Init
+  // ============================================================
+  window.addEventListener("DOMContentLoaded", () => {
+    // ใส่ Looker URL จาก config (อาจถูก override จาก settings.html)
+    document.getElementById("looker-frame").src = CONFIG.LOOKER_URL;
+    setLanguage("th");
+    addMessage("bot", t("welcome"));
+    loadKnowledge();
+  });
+</script>
 </body>
 </html>
