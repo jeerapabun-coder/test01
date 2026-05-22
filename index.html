@@ -9,8 +9,8 @@
   html, body {
     height: 100%;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Sarabun", Roboto, sans-serif;
-    background: #f4f6fa;
-    color: #1f2937;
+    background: #eff6ff;
+    color: #0f172a;
   }
   body {
     display: flex;
@@ -18,13 +18,22 @@
     min-height: 100vh;
   }
   header {
-    background: linear-gradient(90deg, #1e3a8a, #2563eb);
+    background: linear-gradient(90deg, #0ea5e9, #38bdf8);
     color: #fff;
     padding: 12px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 6px rgba(14,165,233,0.25);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand img {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: #fff;
+    padding: 2px;
+    object-fit: contain;
   }
   header h1 { font-size: 18px; font-weight: 600; }
   .header-controls { display: flex; align-items: center; gap: 6px; }
@@ -66,11 +75,11 @@
   }
   .panel-header {
     padding: 10px 16px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #bae6fd;
     font-weight: 600;
     font-size: 14px;
-    color: #374151;
-    background: #f9fafb;
+    color: #0c4a6e;
+    background: #f0f9ff;
   }
   .dashboard-panel { flex: 0 0 auto; }
   .dashboard-frame {
@@ -103,14 +112,14 @@
   }
   .msg.user {
     align-self: flex-end;
-    background: #2563eb;
+    background: #0ea5e9;
     color: #fff;
     border-bottom-right-radius: 2px;
   }
   .msg.bot {
     align-self: flex-start;
-    background: #f3f4f6;
-    color: #1f2937;
+    background: #e0f2fe;
+    color: #0f172a;
     border-bottom-left-radius: 2px;
   }
   .msg.system {
@@ -135,7 +144,7 @@
   }
   .chat-input textarea {
     flex: 1;
-    border: 1px solid #d1d5db;
+    border: 1px solid #bae6fd;
     border-radius: 8px;
     padding: 10px;
     resize: none;
@@ -145,9 +154,9 @@
     min-height: 42px;
     max-height: 120px;
   }
-  .chat-input textarea:focus { border-color: #2563eb; }
+  .chat-input textarea:focus { border-color: #0ea5e9; }
   .chat-input button {
-    background: #2563eb;
+    background: #0ea5e9;
     color: #fff;
     border: none;
     border-radius: 8px;
@@ -156,14 +165,14 @@
     font-weight: 600;
     transition: background 0.2s;
   }
-  .chat-input button:hover:not(:disabled) { background: #1d4ed8; }
+  .chat-input button:hover:not(:disabled) { background: #0284c7; }
   .chat-input button:disabled { background: #9ca3af; cursor: not-allowed; }
   .status {
     font-size: 12px;
-    color: #6b7280;
+    color: #0369a1;
     padding: 6px 16px;
-    background: #f9fafb;
-    border-top: 1px solid #e5e7eb;
+    background: #f0f9ff;
+    border-top: 1px solid #bae6fd;
   }
   footer {
     text-align: center;
@@ -180,7 +189,10 @@
 </head>
 <body>
 <header>
-  <h1 data-i18n="title">Dashboard & AI Assistant</h1>
+  <div class="brand">
+    <img src="OIP.webp" alt="logo" />
+    <h1 data-i18n="title">Dashboard & AI Assistant</h1>
+  </div>
   <div class="header-controls">
     <div class="lang-switch">
       <button id="lang-th" class="active" onclick="setLanguage('th')">ไทย</button>
@@ -223,17 +235,13 @@
   Powered by Gemini · ข้อมูลจาก Google Sheets
 </footer>
 
+<script src="config.js"></script>
 <script>
   // ============================================================
-  // CONFIG - ค่าเริ่มต้น; user override ได้ผ่าน settings.html (เก็บใน localStorage)
+  // CONFIG - ค่าเริ่มต้นมาจาก config.js (shared across devices)
+  // user override ได้ผ่าน settings.html (เก็บใน localStorage ของเครื่องนั้น)
   // ============================================================
-  const DEFAULT_CONFIG = {
-    GEMINI_API_KEY: "AIzaSyBhch_AKJ-WENNRNAD979ef27jmDFbVqpU",
-    GEMINI_MODEL: "gemini-2.5-flash",
-    SHEET_CSV_URL: "https://docs.google.com/spreadsheets/d/e/YOUR_PUBLISHED_SHEET_ID/pub?gid=0&single=true&output=csv",
-    LOOKER_URL: "https://lookerstudio.google.com/embed/reporting/YOUR_LOOKER_REPORT_ID/page/YOUR_PAGE_ID",
-    MAX_KNOWLEDGE_CHARS: 12000,
-  };
+  const DEFAULT_CONFIG = window.APP_CONFIG;
   const STORAGE_KEY = "dashboard_ai_settings_v1";
 
   function loadConfig() {
