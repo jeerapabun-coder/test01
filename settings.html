@@ -145,6 +145,37 @@
   }
   .toast.show { opacity: 1; }
   .toast.error { background: #dc2626; }
+  /* ── API Key Alert ── */
+  .key-alert {
+    display: none;
+    align-items: flex-start;
+    gap: 12px;
+    background: linear-gradient(135deg, #fef2f2, #fff1f1);
+    border: 1.5px solid #f87171;
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 16px;
+    animation: fadeIn 0.3s ease;
+  }
+  .key-alert.visible { display: flex; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .key-alert-icon { font-size: 24px; margin-top: 1px; }
+  .key-alert-body strong { display: block; color: #991b1b; font-size: 14px; margin-bottom: 4px; }
+  .key-alert-body ol { color: #7f1d1d; font-size: 13px; padding-left: 18px; line-height: 1.9; }
+  .key-alert-body a { color: #dc2626; font-weight: 600; }
+  /* ── Key field highlight ── */
+  .field.highlight-field input {
+    border-color: #f87171;
+    box-shadow: 0 0 0 3px rgba(248,113,113,0.2);
+    animation: pulse 1s ease 0.2s;
+  }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 3px rgba(248,113,113,0.2); }
+    50%      { box-shadow: 0 0 0 6px rgba(248,113,113,0.35); }
+  }
 </style>
 </head>
 <body>
@@ -161,6 +192,18 @@
 </header>
 
 <main>
+  <!-- API Key Alert -->
+  <div id="key-alert" class="key-alert" role="alert">
+    <div class="key-alert-icon">🔑</div>
+    <div class="key-alert-body">
+      <strong id="alert-title">ยังไม่ได้ตั้งค่า Gemini API Key</strong>
+      <ol id="alert-steps">
+        <li>ไปที่ <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">aistudio.google.com/app/apikey</a></li>
+        <li>สร้าง API Key ใหม่ (Create API key)</li>
+        <li>Copy มาวางในช่อง <strong>Gemini API Key</strong> ด้านล่าง แล้วกด <strong>บันทึก</strong></li>
+      </ol>
+    </div>
+  </div>
   <div class="card">
     <h2 data-i18n="dashboardSection">แดชบอร์ด</h2>
     <div class="field">
@@ -181,14 +224,15 @@
 
   <div class="card">
     <h2 data-i18n="aiSection">AI (Gemini)</h2>
-    <div class="field">
+    <div class="field" id="gemini-key-field">
       <label for="gemini-key" data-i18n="keyLabel">Gemini API Key</label>
-      <input type="password" id="gemini-key" placeholder="AIza..." autocomplete="off" />
+      <input type="password" id="gemini-key" placeholder="AIza..." autocomplete="off"
+             oninput="onKeyInput()" />
       <div class="row-toggle">
         <input type="checkbox" id="show-key" onchange="toggleKeyVisibility()" />
         <label for="show-key" data-i18n="showKey">แสดง API key</label>
       </div>
-      <div class="hint" data-i18n="keyHint">รับ key ได้ที่ aistudio.google.com/apikey · key เก็บใน localStorage ของ browser นี้เท่านั้น</div>
+      <div class="hint" data-i18n="keyHint">รับ key ได้ที่ <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> · key เก็บใน localStorage ของ browser นี้เท่านั้น ไม่รั่วขึ้น GitHub</div>
     </div>
     <div class="field">
       <label for="gemini-model" data-i18n="modelLabel">Gemini Model</label>
@@ -286,11 +330,27 @@
 
   function populateForm() {
     const cfg = loadConfig();
-    document.getElementById("looker-url").value = cfg.LOOKER_URL;
-    document.getElementById("sheet-url").value = cfg.SHEET_CSV_URL;
-    document.getElementById("gemini-key").value = cfg.GEMINI_API_KEY;
+    document.getElementById("looker-url").value  = cfg.LOOKER_URL;
+    document.getElementById("sheet-url").value   = cfg.SHEET_CSV_URL;
+    document.getElementById("gemini-key").value  = cfg.GEMINI_API_KEY;
     document.getElementById("gemini-model").value = cfg.GEMINI_MODEL;
+    checkKeyAlert();
   }
+
+  function checkKeyAlert() {
+    const key   = document.getElementById("gemini-key").value.trim();
+    const alert = document.getElementById("key-alert");
+    const field = document.getElementById("gemini-key-field");
+    if (!key) {
+      alert.classList.add("visible");
+      field.classList.add("highlight-field");
+    } else {
+      alert.classList.remove("visible");
+      field.classList.remove("highlight-field");
+    }
+  }
+
+  function onKeyInput() { checkKeyAlert(); }
 
   function toggleKeyVisibility() {
     const input = document.getElementById("gemini-key");
@@ -306,9 +366,16 @@
 
   function saveSettings() {
     const looker = document.getElementById("looker-url").value.trim();
-    const sheet = document.getElementById("sheet-url").value.trim();
-    const key = document.getElementById("gemini-key").value.trim();
-    const model = document.getElementById("gemini-model").value;
+    const sheet  = document.getElementById("sheet-url").value.trim();
+    const key    = document.getElementById("gemini-key").value.trim();
+    const model  = document.getElementById("gemini-model").value;
+
+    // ตรวจสอบว่ากรอก API Key หรือยัง
+    if (!key) {
+      showToast(currentLang === "th" ? "⚠️ กรุณากรอก Gemini API Key ก่อนบันทึก" : "⚠️ Please enter your Gemini API Key", true);
+      document.getElementById("gemini-key").focus();
+      return;
+    }
 
     // light validation: ถ้าใส่ค่า ต้องเป็น URL ที่ parse ได้
     for (const [val, name] of [[looker, "Looker URL"], [sheet, "Sheet URL"]]) {
@@ -319,12 +386,13 @@
     }
 
     const cfg = {
-      LOOKER_URL: looker || DEFAULT_CONFIG.LOOKER_URL,
-      SHEET_CSV_URL: sheet || DEFAULT_CONFIG.SHEET_CSV_URL,
-      GEMINI_API_KEY: key || DEFAULT_CONFIG.GEMINI_API_KEY,
-      GEMINI_MODEL: model || DEFAULT_CONFIG.GEMINI_MODEL,
+      LOOKER_URL:    looker || DEFAULT_CONFIG.LOOKER_URL,
+      SHEET_CSV_URL: sheet  || DEFAULT_CONFIG.SHEET_CSV_URL,
+      GEMINI_API_KEY: key,
+      GEMINI_MODEL:  model  || DEFAULT_CONFIG.GEMINI_MODEL,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+    checkKeyAlert();
     showToast(t("saved"));
   }
 

@@ -185,6 +185,42 @@
     header h1 { font-size: 15px; }
     .msg { max-width: 90%; }
   }
+  /* ── API Key Warning Banner ── */
+  .api-warning {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, #fff7ed, #fef3c7);
+    border: 1.5px solid #f59e0b;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 0;
+    animation: slideDown 0.3s ease;
+  }
+  .api-warning.visible { display: flex; }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .api-warning-icon { font-size: 22px; flex-shrink: 0; }
+  .api-warning-body { flex: 1; }
+  .api-warning-body strong { display: block; color: #92400e; font-size: 14px; margin-bottom: 2px; }
+  .api-warning-body span  { color: #b45309; font-size: 13px; }
+  .api-warning-btn {
+    background: #f59e0b;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .api-warning-btn:hover { background: #d97706; }
 </style>
 </head>
 <body>
@@ -201,6 +237,16 @@
     <a class="settings-link" href="settings.html" data-i18n-title="settingsLink" title="ตั้งค่า">⚙️</a>
   </div>
 </header>
+
+<!-- API Key Warning Banner -->
+<div id="api-warning" class="api-warning" role="alert">
+  <div class="api-warning-icon">⚠️</div>
+  <div class="api-warning-body">
+    <strong id="warn-title">ยังไม่ได้ตั้งค่า Gemini API Key</strong>
+    <span id="warn-body">กรุณากรอก API Key ในหน้า Settings เพื่อเริ่มใช้งาน AI Assistant</span>
+  </div>
+  <a href="settings.html" class="api-warning-btn" id="warn-btn">⚙️ ตั้งค่า</a>
+</div>
 
 <main>
   <section class="panel dashboard-panel">
@@ -484,10 +530,47 @@ ${knowledge || "(no data loaded)"}
   // ============================================================
   // Init
   // ============================================================
+  // ============================================================
+  // API Key Guard
+  // ============================================================
+  function checkApiKey() {
+    const banner = document.getElementById("api-warning");
+    if (!CONFIG.GEMINI_API_KEY || CONFIG.GEMINI_API_KEY.trim() === "") {
+      banner.classList.add("visible");
+      document.getElementById("send-btn").disabled = true;
+      document.getElementById("send-btn").title = currentLang === "th"
+        ? "กรุณาตั้งค่า API Key ก่อนใช้งาน"
+        : "Please set your API Key in Settings first";
+    } else {
+      banner.classList.remove("visible");
+      document.getElementById("send-btn").disabled = false;
+      document.getElementById("send-btn").title = "";
+    }
+  }
+
+  // อัปเดต banner text ตาม language
+  const _origSetLanguage = setLanguage;
+  setLanguage = function(lang) {
+    _origSetLanguage(lang);
+    const warnTitles = { th: "ยังไม่ได้ตั้งค่า Gemini API Key", en: "Gemini API Key not set" };
+    const warnBodies = {
+      th: "กรุณากรอก API Key ในหน้า Settings เพื่อเริ่มใช้งาน AI Assistant",
+      en: "Please enter your API Key in Settings to start using AI Assistant",
+    };
+    const warnBtns  = { th: "⚙️ ตั้งค่า", en: "⚙️ Settings" };
+    const t = document.getElementById("warn-title");
+    const b = document.getElementById("warn-body");
+    const btn = document.getElementById("warn-btn");
+    if (t) t.textContent  = warnTitles[lang]  || warnTitles.th;
+    if (b) b.textContent  = warnBodies[lang]  || warnBodies.th;
+    if (btn) btn.textContent = warnBtns[lang] || warnBtns.th;
+  };
+
   window.addEventListener("DOMContentLoaded", () => {
     // ใส่ Looker URL จาก config (อาจถูก override จาก settings.html)
     document.getElementById("looker-frame").src = CONFIG.LOOKER_URL;
     setLanguage("th");
+    checkApiKey();
     addMessage("bot", t("welcome"));
     loadKnowledge();
   });
